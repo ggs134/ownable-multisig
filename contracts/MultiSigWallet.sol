@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-contract MultiSigWallet {
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+contract MultiSigWallet is IERC20 {
     //TODO : support different type of token deposit
     event Deposit(address indexed sender, uint amount, uint balance);
     event SubmitTransaction(
@@ -126,8 +128,11 @@ contract MultiSigWallet {
         emit ChangeMaster(msg.sender, _newMaster);
     }
 
-    function withdrawToken(address _token, uint _amount) public onlyMaster {
-        //TODO : fill logic
+    function withdrawToken(address _token, uint _amount) public onlyMaster  {
+        IERC20 tokenContract = IERC20(_token);
+        tokenContract.approve(address(this), _amount);
+        tokenContract.transferFrom(address(this), master, _amount);
+        
         emit WithdrawToken(msg.sender, _token, _amount);
     }
 
