@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract MultiSigWallet is IERC20 {
+contract MultiSigWallet {
     //TODO : support different type of token deposit
     event Deposit(address indexed sender, uint amount, uint balance);
     event SubmitTransaction(
@@ -129,10 +129,8 @@ contract MultiSigWallet is IERC20 {
     }
 
     function withdrawToken(address _token, uint _amount) public onlyMaster  {
-        IERC20 tokenContract = IERC20(_token);
-        tokenContract.approve(address(this), _amount);
-        tokenContract.transferFrom(address(this), master, _amount);
-        
+        IERC20(_token).transfer(master, _amount);
+
         emit WithdrawToken(msg.sender, _token, _amount);
     }
 
@@ -152,6 +150,9 @@ contract MultiSigWallet is IERC20 {
                 numConfirmations: 0
             })
         );
+
+        //confirm transaction by submitter
+        confirmTransaction(txIndex);
 
         emit SubmitTransaction(msg.sender, txIndex, _to, _value, _data);
     }
