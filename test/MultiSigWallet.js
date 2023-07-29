@@ -27,6 +27,8 @@ describe("Multisig", function () {
     };
 
     async function deployTestTokenFixture() {
+        let {multisig, acc1, acc2, acc3} = await loadFixture(deployMultisigFixture);
+
         const [owner1, owner2, owner3] = await ethers.getSigners();
         const TestToken = await ethers.getContractFactory("TestToken");
 
@@ -87,6 +89,7 @@ describe("Multisig", function () {
             "not master"
           );
     });
+
     it("Should Master be changed", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let signers = await ethers.getSigners();
@@ -95,14 +98,54 @@ describe("Multisig", function () {
         await multisig.changeMaster(owner4);
         expect(await multisig.isMaster(owner4)).to.equal(true);
     });
-    // it("Should Master withdraw token");
-    // it("Can Owner submit transaction");
-    // it("Should submitted transaction confirm to be 1")
+
+    it("Can Owner submit transaction and submitted data is correct", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let signers = await ethers.getSigners();
+        // owner4 : 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+        let owner4 = signers[3];
+
+        // let txData = multisig.interface.encodeFunctionData(
+        //     "changeOwner",
+        //     [0, owner4.address]
+        // );
+
+        let amount = ethers.parseEther("50","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner1.address, amount]
+        );
+
+        // console.log(txData);
+        // console.log(testToken.target);
+    
+        await multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+
+        await mine(1);
+
+        let submittedTx = await multisig.getTransaction(0);
+        // console.log(submittedTx);
+
+        expect(submittedTx[0]).to.equal(testToken.target);//tx.to
+        expect(submittedTx[1]).to.equal(0);//tx.value
+        expect(submittedTx[2]).to.equal(txData);//tx.data
+        expect(submittedTx[3]).to.equal(false);//tx.executed
+        expect(submittedTx[4]).to.equal(1);//tx.numConfirmations
+    });
+
     // it("Should not non-owner submit trasaction");
     // it("Confirm 1 submitted transaction");
     // it("Should not non-owner confirm trasaction");
     // it("Should required confirmed executed");
     // it("Should not less required confirmed executed");
     // it("Should revoke work");
+    // it("Should Master withdraw token");
 
 });
