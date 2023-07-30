@@ -173,7 +173,7 @@ describe("Multisig", function () {
         
         let txData = testToken.interface.encodeFunctionData(
             "transfer",
-            [multisig.target, amount]
+            [owner3.address, amount]
         );
 
         await multisig.submitTransaction(
@@ -183,12 +183,20 @@ describe("Multisig", function () {
         );
         await mine(1);
 
+        
         let confirmTx = await multisig.connect(owner3).confirmTransaction(0);
         await mine(1);
 
         let getTx = await multisig.getTransaction(0)
 
         expect(getTx[4]).to.equal(2); //tx.numConfirmations == 2
+
+        await multisig.connect(owner2).executeTransaction(0);
+        await mine(1)
+
+        // expect(await multisig.getTransaction(0))
+        console.log(await multisig.getTransaction(0));
+        console.log(await testToken.balanceOf(multisig.target));
     });
 
     // it("Should not less required confirmed executed");
