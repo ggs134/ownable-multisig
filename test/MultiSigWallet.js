@@ -156,13 +156,44 @@ describe("Multisig", function () {
         expect(multisigBalance).to.equal(amountRemain);
     });
 
-    // it("Should required confirmed executed");
-    // it("Should not less required confirmed executed");
+    it("Should required confirmed executed", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
 
+        let signers = await ethers.getSigners();
+        // owner4 : 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+        let owner4 = signers[3];
+
+        // let txData = multisig.interface.encodeFunctionData(
+        //     "changeOwner",
+        //     [0, owner4.address]
+        // );
+
+        let amount = ethers.parseEther("40","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [multisig.target, amount]
+        );
+
+        await multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+        await mine(1);
+
+        let confirmTx = await multisig.connect(owner3).confirmTransaction(0);
+        await mine(1);
+
+        let getTx = await multisig.getTransaction(0)
+
+        expect(getTx[4]).to.equal(2); //tx.numConfirmations == 2
+    });
+
+    // it("Should not less required confirmed executed");
     // it("Should not non-owner submit trasaction");
     // it("Should not non-owner confirm trasaction");
     // it("Should revoke work");
-    
-    
 
 });
