@@ -227,6 +227,7 @@ describe("Multisig", function () {
             "cannot execute tx"
         );
     });
+
     it("Should not non-owner submit trasaction", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let {testToken} = await loadFixture(deployTestTokenFixture);
@@ -251,6 +252,65 @@ describe("Multisig", function () {
             "not owner"
         ); 
     });
-    // it("Should not non-owner confirm trasaction");
-    // it("Should revoke work");
+
+    it("Should not non-owner confirm trasaction", async function() {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let signers = await ethers.getSigners();
+        let owner4 = signers[3]; // 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+        let amount = ethers.parseEther("40","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner3.address, amount]
+        );
+
+        let submittedTx = multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+        await mine(1);
+
+        let confirmTx = multisig.connect(owner4).confirmTransaction(0);
+
+        expect(confirmTx).to.be.revertedWith(
+            "not owner"
+        );       
+    });
+
+    it("Should revoke confirmation work", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        // let signers = await ethers.getSigners();
+        // let owner4 = signers[3]; // 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+        let amount = ethers.parseEther("40","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner3.address, amount]
+        );
+
+        let submittedTx = multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+        await mine(1);
+
+        await multisig.revokeConfirmation(0);
+        await mine(1);
+
+        let getTxAfterRevoked = await multisig.getTransaction(0);
+
+        // expect(await multisig.getTransaction(0))
+        // console.log(await multisig.getTransaction(0));
+        // console.log(await testToken.balanceOf(multisig.target));
+        
+        expect(getTxAfterRevoked[4]).to.equal(0); //tx.numConfirmations == 0
+    });
 });
