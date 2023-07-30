@@ -87,7 +87,7 @@ describe("Multisig", function () {
         let tx = multisig.connect(owner2).changeOwner(0, owner4);
         await expect(tx).to.be.revertedWith(
             "not master"
-          );
+        );
     });
 
     it("Should Master be changed", async function () {
@@ -225,10 +225,32 @@ describe("Multisig", function () {
 
         expect(multisig.executeTransaction(0)).to.be.revertedWith(
             "cannot execute tx"
-            );
+        );
     });
-    // it("Should not non-owner submit trasaction");
+    it("Should not non-owner submit trasaction", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let signers = await ethers.getSigners();
+        let owner4 = signers[3]; // 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+        let amount = ethers.parseEther("40","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner3.address, amount]
+        );
+
+        let submittedTx = multisig.connect(owner4).submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+
+        expect(submittedTx).to.be.revertedWith(
+            "not owner"
+        ); 
+    });
     // it("Should not non-owner confirm trasaction");
     // it("Should revoke work");
-
 });
