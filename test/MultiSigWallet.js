@@ -170,6 +170,7 @@ describe("Multisig", function () {
         // );
 
         let amount = ethers.parseEther("40","ether");
+        let remainAmount = ethers.parseEther("60","ether");
         
         let txData = testToken.interface.encodeFunctionData(
             "transfer",
@@ -194,12 +195,38 @@ describe("Multisig", function () {
         await multisig.connect(owner2).executeTransaction(0);
         await mine(1)
 
+        let getTxAfterExecuted = await multisig.getTransaction(0);
+
         // expect(await multisig.getTransaction(0))
-        console.log(await multisig.getTransaction(0));
-        console.log(await testToken.balanceOf(multisig.target));
+        // console.log(await multisig.getTransaction(0));
+        // console.log(await testToken.balanceOf(multisig.target));
+        
+        expect(getTxAfterExecuted[3]).to.equal(true); //tx.executed = true
+        expect(await testToken.balanceOf(multisig.target)).to.equal(remainAmount);
     });
 
-    // it("Should not less required confirmed executed");
+    it("Should not less confirmed executed", async function() {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let amount = ethers.parseEther("40","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner3.address, amount]
+        );
+
+        await multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+        await mine(1);
+
+        expect(multisig.executeTransaction(0)).to.be.revertedWith(
+            "cannot execute tx"
+            );
+    });
     // it("Should not non-owner submit trasaction");
     // it("Should not non-owner confirm trasaction");
     // it("Should revoke work");
