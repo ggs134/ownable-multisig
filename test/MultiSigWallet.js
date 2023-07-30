@@ -1,5 +1,4 @@
 const { ethers } = require("hardhat");
-
 const {
     time,
     loadFixture,
@@ -34,7 +33,6 @@ describe("Multisig", function () {
 
         const weiAmount = ethers.parseUnits("1000", "ether");
 
-
         //transfer token to multisig and account2
         const testToken = await TestToken.deploy(weiAmount, {});
 
@@ -48,7 +46,6 @@ describe("Multisig", function () {
         //owner1   = 700 testToken
         //owner2   = 200 testToken
         //multisig = 100 testToken
-
         return {testToken};
     }
 
@@ -67,8 +64,7 @@ describe("Multisig", function () {
     it("Should one of owner be changed", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let signers = await ethers.getSigners();
-        // owner4 : 0x90F79bf6EB2c4f870365E785982E1f101E93b906
-        let owner4 = signers[3];
+        let owner4 = signers[3]; //0x90F79bf6EB2c4f870365E785982E1f101E93b906
         // console.log(owner4);
         // change first owner to owner4
         await multisig.changeOwner(0, owner4);
@@ -93,8 +89,7 @@ describe("Multisig", function () {
     it("Should Master be changed", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let signers = await ethers.getSigners();
-        // owner4 : 0x90F79bf6EB2c4f870365E785982E1f101E93b906
-        let owner4 = signers[3];
+        let owner4 = signers[3]; //0x90F79bf6EB2c4f870365E785982E1f101E93b906
         await multisig.changeMaster(owner4);
         expect(await multisig.isMaster(owner4)).to.equal(true);
     });
@@ -104,13 +99,7 @@ describe("Multisig", function () {
         let {testToken} = await loadFixture(deployTestTokenFixture);
 
         let signers = await ethers.getSigners();
-        // owner4 : 0x90F79bf6EB2c4f870365E785982E1f101E93b906
-        let owner4 = signers[3];
-
-        // let txData = multisig.interface.encodeFunctionData(
-        //     "changeOwner",
-        //     [0, owner4.address]
-        // );
+        let owner4 = signers[3]; //0x90F79bf6EB2c4f870365E785982E1f101E93b906
 
         let amount = ethers.parseEther("50","ether");
         
@@ -161,8 +150,7 @@ describe("Multisig", function () {
         let {testToken} = await loadFixture(deployTestTokenFixture);
 
         let signers = await ethers.getSigners();
-        // owner4 : 0x90F79bf6EB2c4f870365E785982E1f101E93b906
-        let owner4 = signers[3];
+        let owner4 = signers[3]; //0x90F79bf6EB2c4f870365E785982E1f101E93b906
 
         // let txData = multisig.interface.encodeFunctionData(
         //     "changeOwner",
@@ -285,9 +273,6 @@ describe("Multisig", function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let {testToken} = await loadFixture(deployTestTokenFixture);
 
-        // let signers = await ethers.getSigners();
-        // let owner4 = signers[3]; // 0x90F79bf6EB2c4f870365E785982E1f101E93b906
-
         let amount = ethers.parseEther("40","ether");
         
         let txData = testToken.interface.encodeFunctionData(
@@ -306,10 +291,6 @@ describe("Multisig", function () {
         await mine(1);
 
         let getTxAfterRevoked = await multisig.getTransaction(0);
-
-        // expect(await multisig.getTransaction(0))
-        // console.log(await multisig.getTransaction(0));
-        // console.log(await testToken.balanceOf(multisig.target));
         
         expect(getTxAfterRevoked[4]).to.equal(0); //tx.numConfirmations == 0
     });
