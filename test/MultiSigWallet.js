@@ -140,12 +140,29 @@ describe("Multisig", function () {
         expect(submittedTx[4]).to.equal(1);//tx.numConfirmations
     });
 
-    // it("Should not non-owner submit trasaction");
-    // it("Confirm 1 submitted transaction");
-    // it("Should not non-owner confirm trasaction");
+    it("Should Master withdraw token", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let amountWithdrawal = ethers.parseEther("30","ether");
+        let amountRemain = ethers.parseEther("70","ether");
+
+        await multisig.withdrawToken(testToken.target, amountWithdrawal);
+
+        await mine(1);
+        
+        let multisigBalance = await testToken.balanceOf(multisig.target);
+        // console.log(multisigBalance);
+        expect(multisigBalance).to.equal(amountRemain);
+    });
+
     // it("Should required confirmed executed");
     // it("Should not less required confirmed executed");
+
+    // it("Should not non-owner submit trasaction");
+    // it("Should not non-owner confirm trasaction");
     // it("Should revoke work");
-    // it("Should Master withdraw token");
+    
+    
 
 });
