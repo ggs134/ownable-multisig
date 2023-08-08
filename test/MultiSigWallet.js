@@ -255,6 +255,149 @@ describe("Multisig", function () {
         );
     });
 
+    it("Should confirmations be changed", async function() {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        
+        let numConfirmationsBefore = await multisig.numConfirmationsRequired();
+
+        await multisig.changeNumConfirmationsRequired(3);
+
+        await mine(1);
+
+        let numConfirmationsAfter = await multisig.numConfirmationsRequired();
+
+        // let getTx = await multisig.getTransaction(0)
+
+        // console.log(getTx[4]);
+        // console.log("num confirmations*****************");
+
+        // expect(getTx[4]).to.equal(3); //tx.numConfirmations == 3
+        expect(numConfirmationsBefore).to.equal(2);
+        expect(numConfirmationsAfter).to.equal(3);
+    });
+
+    it("Should not less required confirmed executed2(change num confirmations to 3)", async function() {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let amount = ethers.parseEther("40","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner3.address, amount]
+        );
+
+        await multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+
+        //current confirmations of #0 == 2
+        await multisig.connect(owner2).confirmTransaction(0);
+        
+        //change num confirmations
+        await multisig.changeNumConfirmationsRequired(3);
+
+        await mine(1);
+
+        expect(multisig.executeTransaction(0)).to.be.revertedWith(
+            "cannot execute tx"
+        );
+    });
+
+    it("Should not less required confirmed executed3(change num confirmations to 3)", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let signers = await ethers.getSigners();
+        let owner4 = signers[3]; //0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+        // let txData = multisig.interface.encodeFunctionData(
+        //     "changeOwner",
+        //     [0, owner4.address]
+        // );
+
+        let amount = ethers.parseEther("40","ether");
+        // let remainAmount = ethers.parseEther("60","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner3.address, amount]
+        );
+
+        await multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+        await mine(1);
+
+        
+        let confirmTx1 = await multisig.connect(owner2).confirmTransaction(0);
+        // let confirmTx2 = await multisig.connect(owner3).confirmTransaction(0);
+        await mine(1);
+        await multisig.changeNumConfirmationsRequired(3);
+
+        let getTx = await multisig.getTransaction(0)
+
+        expect(getTx[4]).to.equal(2); //tx.numConfirmations == 2
+
+        expect(multisig.connect(owner2).executeTransaction(0)).to.be.revertedWith(
+            "cannot execute tx"
+        );
+    });
+
+    it("Should required confirmed executed2(change num confirmations to 3)", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let signers = await ethers.getSigners();
+        let owner4 = signers[3]; //0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+        // let txData = multisig.interface.encodeFunctionData(
+        //     "changeOwner",
+        //     [0, owner4.address]
+        // );
+
+        let amount = ethers.parseEther("40","ether");
+        let remainAmount = ethers.parseEther("60","ether");
+        
+        let txData = testToken.interface.encodeFunctionData(
+            "transfer",
+            [owner3.address, amount]
+        );
+
+        await multisig.submitTransaction(
+            testToken.target, 
+            0,
+            txData
+        );
+        await mine(1);
+
+        
+        let confirmTx1 = await multisig.connect(owner2).confirmTransaction(0);
+        let confirmTx2 = await multisig.connect(owner3).confirmTransaction(0);
+        await mine(1);
+        await multisig.changeNumConfirmationsRequired(3);
+
+        let getTx = await multisig.getTransaction(0)
+
+        expect(getTx[4]).to.equal(3); //tx.numConfirmations == 2
+
+        await multisig.connect(owner2).executeTransaction(0);
+        await mine(1)
+
+        let getTxAfterExecuted = await multisig.getTransaction(0);
+
+        // expect(await multisig.getTransaction(0))
+        // console.log(await multisig.getTransaction(0));
+        // console.log(await testToken.balanceOf(multisig.target));
+        
+        expect(getTxAfterExecuted[3]).to.equal(true); //tx.executed = true
+        expect(await testToken.balanceOf(multisig.target)).to.equal(remainAmount);
+    });
+
     it("Should not non-owner submit trasaction", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let {testToken} = await loadFixture(deployTestTokenFixture);

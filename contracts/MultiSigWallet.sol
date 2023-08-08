@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract MultiSigWallet {
-    event Deposit(address indexed sender, uint amount, uint balance);
+
     event SubmitTransaction(
         address indexed owner,
         uint indexed txIndex,
@@ -15,6 +15,7 @@ contract MultiSigWallet {
     event ConfirmTransaction(address indexed owner, uint indexed txIndex);
     event RevokeConfirmation(address indexed owner, uint indexed txIndex);
     event ExecuteTransaction(address indexed owner, uint indexed txIndex);
+    event ChangeNumConfirmationsRequired(uint indexed numRequired);
 
     event ChangeOwner(
         address indexed sender,
@@ -111,6 +112,17 @@ contract MultiSigWallet {
         }
 
         numConfirmationsRequired = _numConfirmationsRequired;
+    }
+
+    function changeNumConfirmationsRequired(
+        uint _numRequired
+    ) public onlyMaster {
+        require(_numRequired <= owners.length, "Num required can not exceed num of owners");
+        require(_numRequired != 0, "Num required should not be zero");
+
+        numConfirmationsRequired = _numRequired;
+
+        emit ChangeNumConfirmationsRequired(_numRequired);
     }
 
     function changeOwner(
