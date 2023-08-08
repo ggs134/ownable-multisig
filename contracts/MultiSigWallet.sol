@@ -127,6 +127,8 @@ contract MultiSigWallet {
     }
 
     function changeMaster(address _newMaster) public onlyMaster nonZeroAddress(_newMaster) {
+        require(_newMaster != master, "It is already master");
+
         master = _newMaster;
         isMaster[_newMaster] = true;
         isMaster[msg.sender] = false;

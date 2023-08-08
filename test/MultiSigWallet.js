@@ -106,6 +106,14 @@ describe("Multisig", function () {
         expect(await multisig.isMaster(owner4)).to.equal(true);
     });
 
+    it("Same Master should not be changed", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let tx = await multisig.changeMaster(owner1);
+        await expect(tx).to.be.revertedWith(
+            "It is already master"
+        );
+    });
+
     it("Can Owner submit transaction and submitted data is correct", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let {testToken} = await loadFixture(deployTestTokenFixture);
