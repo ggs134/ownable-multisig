@@ -137,6 +137,7 @@ contract MultiSigWallet {
     }
 
     function withdrawToken(address _token, uint _amount) public onlyMaster  {
+        require(IERC20(_token).balanceOf(address(this)) >= _amount, "Insufficient balance");
         IERC20(_token).transfer(master, _amount);
 
         emit WithdrawToken(msg.sender, _token, _amount);
@@ -147,6 +148,7 @@ contract MultiSigWallet {
         uint _value,
         bytes memory _data
     ) public onlyOwner nonZeroAddress(_to) {
+        require(_data.length != 0, "invalid data");
         uint txIndex = transactions.length;
 
         transactions.push(

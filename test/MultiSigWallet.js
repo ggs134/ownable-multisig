@@ -108,8 +108,8 @@ describe("Multisig", function () {
 
     it("Same Master should not be changed", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
-        let tx = await multisig.changeMaster(owner1);
-        await expect(tx).to.be.revertedWith(
+        let tx = multisig.changeMaster(owner1);
+        expect(tx).to.be.revertedWith(
             "It is already master"
         );
     });
@@ -163,6 +163,25 @@ describe("Multisig", function () {
         let multisigBalance = await testToken.balanceOf(multisig.target);
         // console.log(multisigBalance);
         expect(multisigBalance).to.equal(amountRemain);
+    });
+
+    it("Should not Master withdraw token insufficient amount", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let {testToken} = await loadFixture(deployTestTokenFixture);
+
+        let amountWithdrawal = ethers.parseEther("101","ether");
+        // let amountRemain = ethers.parseEther("70","ether");
+
+        let tx = multisig.withdrawToken(testToken.target, amountWithdrawal);
+
+        await mine(1);
+        
+        // let multisigBalance = await testToken.balanceOf(multisig.target);
+        // console.log(multisigBalance);
+        // expect(multisigBalance).to.equal(amountRemain);
+        expect(tx).to.be.revertedWith(
+            "Insufficient balance"
+        );
     });
 
     it("Should required confirmed executed", async function () {
