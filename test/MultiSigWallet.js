@@ -86,6 +86,18 @@ describe("Multisig", function () {
         );
     });
 
+    it("Existing Owner can not be changed", async function () {
+        let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
+        let signers = await ethers.getSigners();
+        // owner4 : 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+        let owner4 = signers[3];
+        // ?? WHY NO NEED "await" HERE
+        let tx = multisig.changeOwner(0, owner1);
+        await expect(tx).to.be.revertedWith(
+            "It is already owner"
+        );
+    });
+
     it("Should Master be changed", async function () {
         let {multisig, owner1, owner2, owner3} = await loadFixture(deployMultisigFixture);
         let signers = await ethers.getSigners();

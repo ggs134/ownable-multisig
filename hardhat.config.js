@@ -7,16 +7,16 @@ module.exports = {
   networks: {
     hardhat: {
     },
-    titan: {
-      url: `${process.env.ETH_NODE_URI_TITAN}`,
-      accounts: [`${process.env.PRIVATE_KEY}`],
-      chainId: 55004
-    },
-    titangoerli: {
-      url: `${process.env.ETH_NODE_URI_TITAN_GOERLI}`,
-      accounts: [`${process.env.PRIVATE_KEY}`],
-      chainId: 5050
-    }
+    // titan: {
+    //   url: `${process.env.ETH_NODE_URI_TITAN}`,
+    //   accounts: [`${process.env.PRIVATE_KEY}`],
+    //   chainId: 55004
+    // },
+    // titangoerli: {
+    //   url: `${process.env.ETH_NODE_URI_TITAN_GOERLI}`,
+    //   accounts: [`${process.env.PRIVATE_KEY}`],
+    //   chainId: 5050
+    // }
   },
   etherscan: {
     apiKey: {

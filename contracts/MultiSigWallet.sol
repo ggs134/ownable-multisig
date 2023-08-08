@@ -111,7 +111,9 @@ contract MultiSigWallet {
         uint _index,
         address _newOwner
     ) public onlyMaster {
-        
+
+        require(!isOwner[_newOwner], "It is already owner");
+
         isOwner[owners[_index]] = false;
         isOwner[_newOwner] = true;
         owners[_index] = _newOwner;
