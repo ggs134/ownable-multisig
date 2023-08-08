@@ -79,6 +79,16 @@ contract MultiSigWallet {
         _;
     }
 
+    modifier isValidOwnerIndex(uint index) {
+     require(index < owners.length, "It is not valid owner index");
+     _;
+    }
+
+    modifier nonZeroAddress(address addr) {
+        require(addr != address(0), "zero address");
+        _;
+    }
+
     constructor(address[] memory _owners, uint _numConfirmationsRequired) {
         require(_owners.length > 0, "owners required");
         require(
@@ -110,8 +120,7 @@ contract MultiSigWallet {
     function changeOwner(
         uint _index,
         address _newOwner
-    ) public onlyMaster {
-
+    ) public onlyMaster isValidOwnerIndex(_index) nonZeroAddress(_newOwner){
         require(!isOwner[_newOwner], "It is already owner");
 
         isOwner[owners[_index]] = false;
@@ -121,7 +130,7 @@ contract MultiSigWallet {
         emit ChangeOwner(msg.sender, _index, _newOwner);
     }
 
-    function changeMaster(address _newMaster) public onlyMaster {
+    function changeMaster(address _newMaster) public onlyMaster nonZeroAddress(_newMaster) {
         master = _newMaster;
         isMaster[_newMaster] = true;
         isMaster[msg.sender] = false;
@@ -139,7 +148,7 @@ contract MultiSigWallet {
         address _to,
         uint _value,
         bytes memory _data
-    ) public onlyOwner {
+    ) public onlyOwner nonZeroAddress(_to) {
         uint txIndex = transactions.length;
 
         transactions.push(
