@@ -35,21 +35,22 @@ async function main() {
 
   ///////////
 
-  const initialSupply = hre.ethers.parseEther("900000");
+  const initialSupplyTON = hre.ethers.parseEther("900000");
+  const initialSupplyUSD = hre.ethers.parseUnits("900000", 6);
 
   const test_TON = await hre.ethers.deployContract(
     "TestTON",
-    [initialSupply], {value: 0}
+    [initialSupplyTON], {value: 0}
   );
 
   const test_USDC = await hre.ethers.deployContract(
     "TestUSDC",
-    [initialSupply], {value: 0}
+    [initialSupplyUSD], {value: 0}
   );
 
   const test_USDT = await hre.ethers.deployContract(
     "TestUSDT",
-    [initialSupply], {value: 0}
+    [initialSupplyUSD], {value: 0}
   );
 
   console.log(

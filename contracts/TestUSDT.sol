@@ -7,4 +7,8 @@ contract TestUSDT is ERC20 {
     constructor(uint256 initialSupply) ERC20("TestUSDT", "TUSDT") {
         _mint(msg.sender, initialSupply);
     }
+
+    function decimals() override public view returns (uint8) {
+        return 6;
+    }
 }
